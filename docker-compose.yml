@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+  db:
+    image: mysql:5.7.17
+    volumes:
+      - "./.data/db:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+    expose:
+      - "3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - db
+
+  web:
+    image: pensiero/bonds-optimizer
+    depends_on:
+      - db
+    env_file: .env
