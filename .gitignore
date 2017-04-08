@@ -16,4 +16,5 @@
 /vendor/
 /web/bundles/
 .env
+.idea
 docker-compose.override.yml
