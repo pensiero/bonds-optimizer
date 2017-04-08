@@ -1,22 +1,39 @@
 version: '2'
 
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./config/docker/certs:/etc/nginx/certs
+
   db:
     image: mysql:5.7.17
     volumes:
       - "./.data/db:/var/lib/mysql"
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
     expose:
       - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     depends_on:
       - db
+    environment:
+      - VIRTUAL_HOST=phpmyadmin.bonds.dev
 
   web:
-    image: pensiero/bonds-optimizer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ".:/var/www"
     depends_on:
       - db
     env_file: .env
+    environment:
+      - VIRTUAL_HOST=*.bonds.dev
