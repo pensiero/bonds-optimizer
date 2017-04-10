@@ -1,6 +1,0 @@
-{
-  "name": "bonds-optimizer",
-  "dependencies": {
-    "bootstrap": "4.*"
-  }
-}

@@ -1,0 +1,17 @@
+{
+  "name": "bonds-optimizer",
+  "version": "1.0.0",
+  "description": "Bonds Optimizer",
+  "author": "Oscar Fanelli <oscar.fanelli@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pensiero/bonds-optimizer"
+  },
+  "bugs": {
+    "url": "https://github.com/pensiero/bonds-optimizer/issues"
+  },
+  "dependencies": {
+    "bootstrap": "4.*"
+  },
+  "license": "MIT"
+}
