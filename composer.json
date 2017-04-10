@@ -16,14 +16,15 @@
         "doctrine/doctrine-bundle": "^1.6",
         "doctrine/doctrine-cache-bundle": "^1.2",
         "doctrine/orm": "^2.5",
+        "fedexx2/html-parser": "0.2.*",
         "incenteev/composer-parameter-handler": "^2.0",
         "sensio/distribution-bundle": "^5.0",
         "sensio/framework-extra-bundle": "^3.0.2",
+        "symfony/assetic-bundle": "^2.8",
         "symfony/monolog-bundle": "^3.0.2",
         "symfony/polyfill-apcu": "^1.0",
         "symfony/symfony": "3.2.*",
-        "twig/twig": "^1.0||^2.0",
-        "fedexx2/html-parser": "0.2.*"
+        "twig/twig": "^1.0||^2.0"
     },
     "require-dev": {
         "sensio/generator-bundle": "^3.0",
@@ -44,7 +45,11 @@
         "post-update-cmd": [
             "@symfony-scripts"
         ],
-        "serve": "php bin/console server:run"
+        "serve": "php bin/console server:run",
+        "yarn-install": "yarn install --production",
+        "yarn-update": "yarn upgrade",
+        "bower-install": "$(npm bin -q)/bower install --allow-root",
+        "bower-update": "$(npm bin -q)/bower update --allow-root"
     },
     "config": {
         "platform": {

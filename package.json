@@ -11,7 +11,7 @@
     "url": "https://github.com/pensiero/bonds-optimizer/issues"
   },
   "dependencies": {
-    "bootstrap": "4.*"
+    "bower": "1.*"
   },
   "license": "MIT"
 }
