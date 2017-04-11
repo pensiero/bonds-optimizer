@@ -4,6 +4,11 @@
         <meta charset="UTF-8" />
         <title>{% block title %}Bonds Optimizer{% endblock %}</title>
         <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/dist/css/bootstrap.min.css') }}" />
+        {% stylesheets filter="cssrewrite,scssphp" output="css/app.css"
+            "@AppBundle/Resources/scss/main.scss"
+        %}
+        <link rel="stylesheet" href="{{ asset_url }}" />
+        {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>

@@ -2,29 +2,46 @@
 
 {% block body %}
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Variation</th>
-                <th>Date</th>
-                <th>Open</th>
-                <th>Min</th>
-                <th>Max</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="content-wrapper">
+
+        <div id="content">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Variation</th>
+                        <th>Date</th>
+                        <th>Open</th>
+                        <th>Min</th>
+                        <th>Max</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="aside">
+            <div>
+                <form method="get" action="{{ path('homepage') }}">
+                    <div class="form-group">
+                        <label for="ratioInput">Ratio</label>
+                        <input type="number" step="0.01" class="form-control" id="ratioInput" placeholder="0">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
 
 {% endblock %}

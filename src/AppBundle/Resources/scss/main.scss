@@ -1,0 +1,26 @@
+@import "shared/media-queries";
+@import "shared/mixins";
+@import "shared/variables";
+
+$asideWidth: 200px;
+
+#content-wrapper {
+  position: relative;
+}
+
+#content {
+  @include calc('width', '100% - #{$asideWidth}');
+  padding: 15px;
+}
+
+#aside {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: $asideWidth;
+  > div {
+    background-color: $lightColor;
+    position: fixed;
+    padding: 15px;
+  }
+}

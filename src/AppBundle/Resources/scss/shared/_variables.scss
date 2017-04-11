@@ -1,0 +1,31 @@
+// Colors
+$mainColor: #2f343a;
+$darkerColor: #333538;
+$darkColor: #555b62;
+$greyColor: #b0b6bd;
+$lightColor: #f5f6f8;
+
+// Palette
+$redColor: #d92328;
+$brickColor: #eb6b56;
+$orangeColor: #f39c12;
+$yellowColor: #debd38;
+$emeraldColor: #399327;
+$greenColor: #3FB12D;
+$aquaColor: #45c2a4;
+$azureColor: #4c9ece;
+$blueColor: #268ec7;
+$violetColor: #553982;
+$lilacColor: #b785f6;
+$purpleColor: #b7517f;
+$grafiteColor: $darkColor;
+$greyColor: $greyColor;
+
+@function lightColor($color, $factor:0.2) {
+  $base: if($factor >= 0, 255, 0);
+  $factor: if($factor >= 0, $factor, -$factor);
+  $r: red($color)   + ($base - red($color))   * $factor;
+  $g: green($color) + ($base - green($color)) * $factor;
+  $b: blue($color)  + ($base - blue($color))  * $factor;
+  @return rgb($r,$g,$b);
+}
