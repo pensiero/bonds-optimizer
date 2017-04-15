@@ -34,6 +34,8 @@ class CrawlCommand extends ContainerAwareCommand
 
         // clear table
         $this->em->createQuery('DELETE FROM AppBundle:Bond')->execute();
+
+        $this->em->flush();
     }
 
     /**
@@ -71,13 +73,13 @@ class CrawlCommand extends ContainerAwareCommand
                 $code = isset($matches[2]) ? $matches[2] : null;
 
                 // price
-                $price = (float) str_replace(',', '.', $parts->nth(1)->getText());
+                $price = (float) str_replace(',', '.', trim($parts->nth(1)->getText()));
 
                 // variation
                 $variation = $parts->nth(2)->find('span')->first()->getText();
                 $variation = $variation === 'UNC.'
                     ? null
-                    : (float) str_replace(',', '.', $variation);
+                    : (float) str_replace(',', '.', trim($variation));
 
                 // date
                 $date = $parts->nth(3)->getText();
@@ -85,13 +87,16 @@ class CrawlCommand extends ContainerAwareCommand
                 $date->setTime(0, 0, 0);
 
                 // open
-                $open = (float) str_replace(',', '.', $parts->nth(4)->getText());
+                $open = str_replace(',', '.', trim($parts->nth(4)->getText()));
+                $open = $open === '---' ? null : (float) $open;
 
                 // min
-                $min = (float) str_replace(',', '.', $parts->nth(5)->getText());
+                $min = str_replace(',', '.', trim($parts->nth(5)->getText()));
+                $min = $min === '---' ? null : (float) $min;
 
                 // max
-                $max = (float) str_replace(',', '.', $parts->nth(6)->getText());
+                $max = str_replace(',', '.', trim($parts->nth(6)->getText()));
+                $max = $max === '---' ? null : (float) $max;
 
                 // create the bond
                 $this->createBond($name, $code, $price, $variation, $date, $open, $min, $max);

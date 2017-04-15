@@ -13,7 +13,16 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
-        // replace this example code with whatever you need
-        return $this->render('default/index.html.twig');
+        $bonds = $this
+            ->getDoctrine()
+            ->getRepository('AppBundle:Bond')
+            ->createQueryBuilder('n')
+            ->orderBy('n.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('default/index.html.twig', [
+            'bonds' => $bonds,
+        ]);
     }
 }

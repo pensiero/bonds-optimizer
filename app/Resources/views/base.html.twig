@@ -7,16 +7,13 @@
         {% stylesheets filter="cssrewrite,scssphp" output="css/app.css"
             "@AppBundle/Resources/scss/main.scss"
         %}
-        <link rel="stylesheet" href="{{ asset_url }}" />
+            <link rel="stylesheet" href="{{ asset_url }}" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
-        <div class="container">
-            {% block body %}
-            {% endblock %}
-        </div>
+        {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>
 </html>

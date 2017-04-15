@@ -5,28 +5,48 @@
     <div id="content-wrapper">
 
         <div id="content">
-            <table class="table">
+            <table class="table table-hover table-striped">
                 <thead>
                     <tr>
                         <th>Name</th>
                         <th>Price</th>
                         <th>Variation</th>
                         <th>Date</th>
+                        {#
                         <th>Open</th>
                         <th>Min</th>
                         <th>Max</th>
+                        #}
+                        <th>Deadline</th>
+                        <th>Years</th>
+                        <th>Coupon</th>
+                        <th>Effective rate</th>
+                        <th>Profit</th>
+                        <th>Yearly rate</th>
+                        <th>Ratio time/price</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                    {% for bond in bonds %}
+                        <tr>
+                            <td><a href="{{ bond.echoUrl() }}">{{ bond }}</a></td>
+                            <td>{{ bond.price }}</td>
+                            <td>{{ bond.variation }}%</td>
+                            <td>{{ bond.echoDate() }}</td>
+                            {#
+                            <td>{{ bond.open }}</td>
+                            <td>{{ bond.min }}</td>
+                            <td>{{ bond.max }}</td>
+                            #}
+                            <td>{{ bond.echoDeadline() }}</td>
+                            <td>{{ bond.echoYearsLeft() }}</td>
+                            <td>{{ bond.echoCoupon() }}</td>
+                            <td>{{ bond.echoRateEffective() }}</td>
+                            <td>{{ bond.echoProfit(5000) }}</td>
+                            <td>{{ bond.echoRatePerYear() }}</td>
+                            <td>{{ bond.echoRatioTimeProfit() }}</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

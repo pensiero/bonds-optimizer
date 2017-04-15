@@ -9,46 +9,234 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Bond extends Entity
 {
+    const BOND_URL = 'http://finanza.repubblica.it/Obbligazioni_TLX_Scheda.aspx?addCode=%s';
+
+    const YEARS_LEFT_PRECISION = 3;
+
+    const RATE_EFFECTIVE_PRECISION = 2;
+
+    const RATE_YEARLY_PRECISION = 3;
+
+    const RATIO_TIME_PROFIT_PRECISION = 5;
+
     /**
      * @ORM\Column(type="string", length=200)
+     * @var string
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=200)
+     * @var string
      */
     private $code;
 
     /**
      * @ORM\Column(type="float")
+     * @var float
      */
     private $price;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @var float
      */
     private $variation;
 
     /**
      * @ORM\Column(type="datetime")
+     * @var \DateTime
      */
     private $date;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @var float
      */
     private $open;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @var float
      */
     private $min;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @var float
      */
     private $max;
 
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string) $this->name;
+    }
+
+    public function echoUrl()
+    {
+        return sprintf(self::BOND_URL, $this->code);
+    }
+
+    /**
+     * @return string
+     */
+    public function echoDate()
+    {
+        if (!$this->date) {
+            return '';
+        }
+
+        return $this->date->format('d-m-y H:i');
+    }
+
+    /**
+     * Clean name from unwanted chars
+     *
+     * @return mixed
+     */
+    private function echoCleanName()
+    {
+        return str_replace('?', '', $this->name);
+    }
+
+    /**
+     * Fetch deadline
+     *
+     * @return \DateTime|null
+     */
+    public function fetchDeadline()
+    {
+        $monthCodes = ['Ge', 'Fb', 'Mz', 'Ap', 'Mg', 'Gn', 'Lg', 'Ag', 'St', 'Ot', 'Nv', 'Dc'];
+        $monthCodesForRegex = implode('|', $monthCodes);
+
+        preg_match('/(\d{2})(['.$monthCodesForRegex.']{2})(\d{2})/i', $this->echoCleanName(), $matches);
+
+        if (!isset($matches[0])) {
+            return null;
+        }
+
+        $day = (int) $matches[1];
+
+        $month = array_search($matches[2], $monthCodes) + 1;
+
+        $year = (int) ("20" . $matches[3]);
+
+        $date = new \DateTime();
+        $date->setDate($year, $month, $day);
+        $date->setTime(0, 0, 0);
+
+        return $date;
+    }
+
+    /**
+     * Echo deadline in a specific string format
+     *
+     * @return null|string
+     */
+    public function echoDeadline()
+    {
+        $deadline = $this->fetchDeadline();
+
+        if (!$deadline) {
+            return null;
+        }
+
+        return $deadline->format('d-m-Y');
+    }
+
+    /**
+     * Days left until deadline
+     *
+     * @return int
+     */
+    public function echoDaysLeft()
+    {
+        $now = new \DateTime();
+        $interval = $now->diff($this->fetchDeadline());
+        $days = (int) $interval->format('%a');
+
+        return $days == 0 ? 1 : $days;
+    }
+
+    /**
+     * Years left until deadline
+     *
+     * @return float
+     */
+    public function echoYearsLeft()
+    {
+        return round($this->echoDaysLeft() / 365, self::YEARS_LEFT_PRECISION);
+    }
+
+    /**
+     * Calculate coupon
+     *
+     * @return float|int
+     */
+    public function echoCoupon()
+    {
+        preg_match('/([0-9]+\.?[0-9]*)%/', $this->echoCleanName(), $matches);
+
+        if (!isset($matches[0])) {
+            return null;
+        }
+
+        return (float) $matches[1];
+    }
+
+    /**
+     * Effective rate (based on years left)
+     *
+     * @return float|int
+     */
+    public function echoRateEffective()
+    {
+        if ($this->price > 0) {
+            return
+                round(
+                    ((100 / $this->price * 100) - 100)
+                    +
+                    ($this->echoCoupon() * $this->echoYearsLeft())
+                    , self::RATE_EFFECTIVE_PRECISION);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Yearly rate
+     *
+     * @return float
+     */
+    public function echoRatePerYear()
+    {
+        return round($this->echoRateEffective() / $this->echoYearsLeft(), self::RATE_YEARLY_PRECISION);
+    }
+
+    /**
+     * Profit based on capital
+     *
+     * @param int $capital
+     *
+     * @return float|int
+     */
+    public function echoProfit($capital)
+    {
+        return $capital / 100 * $this->echoRateEffective();
+    }
+
+    /**
+     * Ratio based on time and profit
+     *
+     * @return float
+     */
+    public function echoRatioTimeProfit()
+    {
+        return round($this->echoRateEffective() / $this->echoDaysLeft(), self::RATIO_TIME_PROFIT_PRECISION) * 100;
+    }
 
     /**
      * Set name
@@ -107,6 +295,10 @@ class Bond extends Entity
      */
     public function setOpen($open)
     {
+        if ($open === '---') {
+            $open = null;
+        }
+
         $this->open = $open;
 
         return $this;
