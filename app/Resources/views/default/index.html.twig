@@ -28,7 +28,7 @@
                 </thead>
                 <tbody>
                     {% for bond in bonds %}
-                        <tr>
+                        <tr{% if bond.highlight %} class="table-warning"{% endif %}>
                             <td><a href="{{ bond.echoUrl() }}">{{ bond }}</a></td>
                             <td>{{ bond.price }}</td>
                             <td>{{ bond.variation }}%</td>
@@ -40,10 +40,10 @@
                             #}
                             <td>{{ bond.echoDeadline() }}</td>
                             <td>{{ bond.echoYearsLeft() }}</td>
-                            <td>{{ bond.echoCoupon() }}</td>
-                            <td>{{ bond.echoRateEffective() }}</td>
-                            <td>{{ bond.echoProfit(5000) }}</td>
-                            <td>{{ bond.echoRatePerYear() }}</td>
+                            <td>{{ bond.echoCoupon() }}%</td>
+                            <td>{{ bond.echoRateEffective() }}%</td>
+                            <td>{{ bond.echoProfit(request.capital) }}€</td>
+                            <td>{{ bond.echoRatePerYear() }}%</td>
                             <td>{{ bond.echoRatioTimeProfit() }}</td>
                         </tr>
                     {% endfor %}
@@ -55,8 +55,44 @@
             <div>
                 <form method="get" action="{{ path('homepage') }}">
                     <div class="form-group">
-                        <label for="ratioInput">Ratio</label>
-                        <input type="number" step="0.01" class="form-control" id="ratioInput" placeholder="0">
+                        <label for="ratioInput">Ratio >=</label>
+                        <input type="text" value="{{ request.ratio }}" name="ratio" id="ratioInput" />
+                    </div>
+                    <div class="form-group">
+                        <label for="yearsStartInput">Anni</label>
+                        <input type="number" step="1" value="{{ request.yearsStart }}" name="years_start" id="yearsStartInput" />
+                    </div>
+                    <div class="form-group">
+                        <label for="yearsEndInput">Anni</label>
+                        <input type="number" step="1" value="{{ request.yearsEnd }}" name="years_end" id="yearsEndInput" />
+                    </div>
+                    <div class="form-group">
+                        <label for="orderInput">Order</label>
+                        <select name="order" id="orderInput">
+                            <option value="name"{% if request.order == 'name' %} selected="selected"{% endif %}>Name</option>
+                            <option value="years"{% if request.order == 'years' %} selected="selected"{% endif %}>Years</option>
+                            <option value="coupon"{% if request.order == 'coupon' %} selected="selected"{% endif %}>Coupon</option>
+                            <option value="rate_effective"{% if request.order == 'rate_effective' %} selected="selected"{% endif %}>Rate effective</option>
+                            <option value="rate_per_year"{% if request.order == 'rate_per_year' %} selected="selected"{% endif %}>Rate per year</option>
+                            <option value="ratio"{% if request.order == 'ratio' %} selected="selected"{% endif %}>Ratio time/price</option>
+                        </select>
+                        <select name="order_direction">
+                            <option value="asc"{% if request.orderDirection == 'asc' %} selected="selected"{% endif %}>asc</option>
+                            <option value="desc"{% if request.orderDirection == 'desc' %} selected="selected"{% endif %}>desc</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">
+                            <input type="checkbox" value="1"{% if request.highlight %} checked="checked"{% endif %} name="highlight" class="form-check-input" />
+                            Highlight
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="capitalInput">Capital</label>
+                        <input type="text" value="{{ request.capital }}" name="capital" id="capitalInput" />
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Filter</button>
                     </div>
                 </form>
             </div>

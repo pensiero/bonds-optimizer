@@ -68,6 +68,12 @@ class Bond extends Entity
     private $max;
 
     /**
+     * @ORM\Column(type="boolean")
+     * @var boolean
+     */
+    private $highlight = false;
+
+    /**
      * @return string
      */
     public function __toString()
@@ -152,7 +158,7 @@ class Bond extends Entity
      *
      * @return int
      */
-    public function echoDaysLeft()
+    public function fetchDaysLeft()
     {
         $now = new \DateTime();
         $interval = $now->diff($this->fetchDeadline());
@@ -166,9 +172,9 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function echoYearsLeft()
+    public function fetchYearsLeft()
     {
-        return round($this->echoDaysLeft() / 365, self::YEARS_LEFT_PRECISION);
+        return round($this->fetchDaysLeft() / 365, self::YEARS_LEFT_PRECISION);
     }
 
     /**
@@ -176,7 +182,7 @@ class Bond extends Entity
      *
      * @return float|int
      */
-    public function echoCoupon()
+    public function fetchCoupon()
     {
         preg_match('/([0-9]+\.?[0-9]*)%/', $this->echoCleanName(), $matches);
 
@@ -192,14 +198,14 @@ class Bond extends Entity
      *
      * @return float|int
      */
-    public function echoRateEffective()
+    public function fetchRateEffective()
     {
         if ($this->price > 0) {
             return
                 round(
                     ((100 / $this->price * 100) - 100)
                     +
-                    ($this->echoCoupon() * $this->echoYearsLeft())
+                    ($this->fetchCoupon() * $this->fetchYearsLeft())
                     , self::RATE_EFFECTIVE_PRECISION);
         }
 
@@ -211,9 +217,9 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function echoRatePerYear()
+    public function fetchRatePerYear()
     {
-        return round($this->echoRateEffective() / $this->echoYearsLeft(), self::RATE_YEARLY_PRECISION);
+        return round($this->fetchRateEffective() / $this->fetchYearsLeft(), self::RATE_YEARLY_PRECISION);
     }
 
     /**
@@ -223,9 +229,9 @@ class Bond extends Entity
      *
      * @return float|int
      */
-    public function echoProfit($capital)
+    public function fetchProfit($capital)
     {
-        return $capital / 100 * $this->echoRateEffective();
+        return $capital / 100 * $this->fetchRateEffective();
     }
 
     /**
@@ -233,9 +239,9 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function echoRatioTimeProfit()
+    public function fetchRatioTimeProfit()
     {
-        return round($this->echoRateEffective() / $this->echoDaysLeft(), self::RATIO_TIME_PROFIT_PRECISION) * 100;
+        return round($this->fetchRateEffective() / $this->fetchDaysLeft(), self::RATIO_TIME_PROFIT_PRECISION) * 100;
     }
 
     /**
@@ -432,5 +438,21 @@ class Bond extends Entity
     public function getCode()
     {
         return $this->code;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHighlight()
+    {
+        return $this->highlight;
+    }
+
+    /**
+     * @param bool $highlight
+     */
+    public function setHighlight($highlight)
+    {
+        $this->highlight = $highlight;
     }
 }
