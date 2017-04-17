@@ -16,8 +16,6 @@ class DefaultController extends Controller
 
     private function orderBonds($bonds, $order, $orderDirection = 'asc')
     {
-        $bondsWithIndex = [];
-
         switch ($order) {
             case 'years': $method = 'fetchYearsLeft'; break;
             case 'coupon': $method = 'fetchCoupon'; break;
@@ -36,19 +34,16 @@ class DefaultController extends Controller
             throw new \Exception('Bond class has no "'.$method.'" method');
         }
 
-        foreach ($bonds as $bond) {
-            $bondsWithIndex[$bond->{$method}()] = $bond;
-        }
-
         // order by key (asc or desc)
-        if (strtoupper($orderDirection) === 'ASC') {
-            ksort($bondsWithIndex);
-        }
-        else {
-            krsort($bondsWithIndex);
-        }
+        usort($bonds, function($a, $b) use ($method, $orderDirection) {
 
-        return $bondsWithIndex;
+            $value = $a->{$method}() <=> $b->{$method}();
+
+            return strtoupper($orderDirection) === 'ASC'
+                ? $value : $value * -1;
+        });
+
+        return $bonds;
     }
 
     /**
