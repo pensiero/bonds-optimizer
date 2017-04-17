@@ -14,6 +14,14 @@
     </head>
     <body>
         {% block body %}{% endblock %}
+
+        {% javascripts
+            'assets/vendor/jquery/dist/jquery.min.js'
+            'assets/vendor/floatThead/dist/jquery.floatThead.js'
+            '@AppBundle/Resources/js/main.js'
+        %}
+            <script src="{{ asset_url }}"></script>
+        {% endjavascripts %}
         {% block javascripts %}{% endblock %}
     </body>
 </html>

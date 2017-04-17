@@ -2,7 +2,7 @@
 @import "shared/mixins";
 @import "shared/variables";
 
-$asideWidth: 200px;
+$asideWidth: 300px;
 
 #content-wrapper {
   position: relative;
@@ -10,7 +10,12 @@ $asideWidth: 200px;
 
 #content {
   @include calc('width', '100% - #{$asideWidth}');
-  padding: 15px;
+  padding: 0 15px;
+  table {
+    thead {
+      background-color: #FFF;
+    }
+  }
 }
 
 #aside {
@@ -19,6 +24,7 @@ $asideWidth: 200px;
   right: 0;
   width: $asideWidth;
   > div {
+    width: $asideWidth;
     background-color: $lightColor;
     position: fixed;
     padding: 15px;

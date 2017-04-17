@@ -1,0 +1,5 @@
+$(function() {
+
+    $('#content > table').floatThead();
+
+});

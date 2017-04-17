@@ -194,6 +194,16 @@ class Bond extends Entity
     }
 
     /**
+     * Echo coupon
+     *
+     * @return string
+     */
+    public function echoCoupon()
+    {
+        return $this->fetchCoupon() . '%';
+    }
+
+    /**
      * Effective rate (based on years left)
      *
      * @return float|int
@@ -213,6 +223,16 @@ class Bond extends Entity
     }
 
     /**
+     * Echo effective rate
+     *
+     * @return string
+     */
+    public function echoRateEffective()
+    {
+        return $this->fetchRateEffective() . '%';
+    }
+
+    /**
      * Yearly rate
      *
      * @return float
@@ -220,6 +240,16 @@ class Bond extends Entity
     public function fetchRatePerYear()
     {
         return round($this->fetchRateEffective() / $this->fetchYearsLeft(), self::RATE_YEARLY_PRECISION);
+    }
+
+    /**
+     * Echo yearly rate
+     *
+     * @return string
+     */
+    public function echoRatePerYear()
+    {
+        return $this->fetchRatePerYear() . '%';
     }
 
     /**
@@ -235,6 +265,18 @@ class Bond extends Entity
     }
 
     /**
+     * Echo profit
+     *
+     * @param int $capital
+     *
+     * @return string
+     */
+    public function echoProfit($capital)
+    {
+        return $this->fetchRatePerYear() . ' €';
+    }
+
+    /**
      * Ratio based on time and profit
      *
      * @return float
@@ -242,6 +284,15 @@ class Bond extends Entity
     public function fetchRatioTimeProfit()
     {
         return round($this->fetchRateEffective() / $this->fetchDaysLeft(), self::RATIO_TIME_PROFIT_PRECISION) * 100;
+    }
+
+    public function echoVariation()
+    {
+        if (empty($this->variation)) {
+            return null;
+        }
+
+        return $this->variation . '%';
     }
 
     /**

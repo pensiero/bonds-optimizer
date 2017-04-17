@@ -31,7 +31,7 @@
                         <tr{% if bond.highlight %} class="table-warning"{% endif %}>
                             <td><a href="{{ bond.echoUrl() }}">{{ bond }}</a></td>
                             <td>{{ bond.price }}</td>
-                            <td>{{ bond.variation }}%</td>
+                            <td>{{ bond.echoVariation() }}</td>
                             <td>{{ bond.echoDate() }}</td>
                             {#
                             <td>{{ bond.open }}</td>
@@ -39,12 +39,12 @@
                             <td>{{ bond.max }}</td>
                             #}
                             <td>{{ bond.echoDeadline() }}</td>
-                            <td>{{ bond.echoYearsLeft() }}</td>
-                            <td>{{ bond.echoCoupon() }}%</td>
-                            <td>{{ bond.echoRateEffective() }}%</td>
-                            <td>{{ bond.echoProfit(request.capital) }}€</td>
-                            <td>{{ bond.echoRatePerYear() }}%</td>
-                            <td>{{ bond.echoRatioTimeProfit() }}</td>
+                            <td>{{ bond.fetchYearsLeft() }}</td>
+                            <td>{{ bond.echoCoupon() }}</td>
+                            <td>{{ bond.echoRateEffective() }}</td>
+                            <td>{{ bond.echoProfit(request.capital) }}</td>
+                            <td>{{ bond.echoRatePerYear() }}</td>
+                            <td>{{ bond.fetchRatioTimeProfit() }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -56,19 +56,19 @@
                 <form method="get" action="{{ path('homepage') }}">
                     <div class="form-group">
                         <label for="ratioInput">Ratio >=</label>
-                        <input type="text" value="{{ request.ratio }}" name="ratio" id="ratioInput" />
+                        <input type="text" value="{{ request.ratio }}" name="ratio" id="ratioInput" class="form-control" />
                     </div>
                     <div class="form-group">
                         <label for="yearsStartInput">Anni</label>
-                        <input type="number" step="1" value="{{ request.yearsStart }}" name="years_start" id="yearsStartInput" />
+                        <input type="number" step="1" value="{{ request.yearsStart }}" name="years_start" id="yearsStartInput" class="form-control" />
                     </div>
                     <div class="form-group">
                         <label for="yearsEndInput">Anni</label>
-                        <input type="number" step="1" value="{{ request.yearsEnd }}" name="years_end" id="yearsEndInput" />
+                        <input type="number" step="1" value="{{ request.yearsEnd }}" name="years_end" id="yearsEndInput" class="form-control" />
                     </div>
                     <div class="form-group">
                         <label for="orderInput">Order</label>
-                        <select name="order" id="orderInput">
+                        <select name="order" id="orderInput" class="form-control">
                             <option value="name"{% if request.order == 'name' %} selected="selected"{% endif %}>Name</option>
                             <option value="years"{% if request.order == 'years' %} selected="selected"{% endif %}>Years</option>
                             <option value="coupon"{% if request.order == 'coupon' %} selected="selected"{% endif %}>Coupon</option>
@@ -76,7 +76,7 @@
                             <option value="rate_per_year"{% if request.order == 'rate_per_year' %} selected="selected"{% endif %}>Rate per year</option>
                             <option value="ratio"{% if request.order == 'ratio' %} selected="selected"{% endif %}>Ratio time/price</option>
                         </select>
-                        <select name="order_direction">
+                        <select name="order_direction" class="form-control">
                             <option value="asc"{% if request.orderDirection == 'asc' %} selected="selected"{% endif %}>asc</option>
                             <option value="desc"{% if request.orderDirection == 'desc' %} selected="selected"{% endif %}>desc</option>
                         </select>
@@ -89,7 +89,7 @@
                     </div>
                     <div class="form-group">
                         <label for="capitalInput">Capital</label>
-                        <input type="text" value="{{ request.capital }}" name="capital" id="capitalInput" />
+                        <input type="text" value="{{ request.capital }}" name="capital" id="capitalInput" class="form-control" />
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">Filter</button>
