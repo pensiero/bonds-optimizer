@@ -187,7 +187,7 @@ class Bond extends Entity
         preg_match('/([0-9]+\.?[0-9]*)%/', $this->echoCleanName(), $matches);
 
         if (!isset($matches[0])) {
-            return null;
+            return 0;
         }
 
         return (float) $matches[1];
@@ -273,7 +273,7 @@ class Bond extends Entity
      */
     public function echoProfit($capital)
     {
-        return $this->fetchRatePerYear() . ' €';
+        return $this->fetchProfit($capital) . ' €';
     }
 
     /**

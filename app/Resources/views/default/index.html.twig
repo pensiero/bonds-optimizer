@@ -5,50 +5,56 @@
     <div id="content-wrapper">
 
         <div id="content">
-            <table class="table table-hover table-striped">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Variation</th>
-                        <th>Date</th>
-                        {#
-                        <th>Open</th>
-                        <th>Min</th>
-                        <th>Max</th>
-                        #}
-                        <th>Deadline</th>
-                        <th>Years</th>
-                        <th>Coupon</th>
-                        <th>Effective rate</th>
-                        <th>Profit</th>
-                        <th>Yearly rate</th>
-                        <th>Ratio time/price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for bond in bonds %}
-                        <tr{% if bond.highlight %} class="table-warning"{% endif %}>
-                            <td><a href="{{ bond.echoUrl() }}">{{ bond }}</a></td>
-                            <td>{{ bond.price }}</td>
-                            <td>{{ bond.echoVariation() }}</td>
-                            <td>{{ bond.echoDate() }}</td>
+
+            {% if bonds is empty %}
+                <p class="lead">There are no bonds</p>
+            {% else %}
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="text-right">Price</th>
+                            <th class="text-right">Variation</th>
+                            <th class="text-right">Date</th>
                             {#
-                            <td>{{ bond.open }}</td>
-                            <td>{{ bond.min }}</td>
-                            <td>{{ bond.max }}</td>
+                            <th class="text-right">Open</th>
+                            <th class="text-right">Min</th>
+                            <th class="text-right">Max</th>
                             #}
-                            <td>{{ bond.echoDeadline() }}</td>
-                            <td>{{ bond.fetchYearsLeft() }}</td>
-                            <td>{{ bond.echoCoupon() }}</td>
-                            <td>{{ bond.echoRateEffective() }}</td>
-                            <td>{{ bond.echoProfit(request.capital) }}</td>
-                            <td>{{ bond.echoRatePerYear() }}</td>
-                            <td>{{ bond.fetchRatioTimeProfit() }}</td>
+                            <th class="text-right">Deadline</th>
+                            <th class="text-right">Years</th>
+                            <th class="text-right">Coupon</th>
+                            <th class="text-right">Effective rate</th>
+                            <th class="text-right">Profit</th>
+                            <th class="text-right">Yearly rate</th>
+                            <th class="text-right">Ratio time/price</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for bond in bonds %}
+                            <tr{% if bond.highlight %} class="table-warning"{% endif %}>
+                                <td><a href="{{ bond.echoUrl() }}">{{ bond }}</a></td>
+                                <td class="text-right">{{ bond.price }}</td>
+                                <td class="text-right text-muted"><small>{{ bond.echoVariation() }}</small></td>
+                                <td class="text-right text-muted"><small>{{ bond.echoDate() }}</small></td>
+                                {#
+                                <td class="text-right">{{ bond.open }}</td>
+                                <td class="text-right">{{ bond.min }}</td>
+                                <td class="text-right">{{ bond.max }}</td>
+                                #}
+                                <td class="text-right">{{ bond.echoDeadline() }}</td>
+                                <td class="text-right">{{ bond.fetchYearsLeft() }}</td>
+                                <td class="text-right">{{ bond.echoCoupon() }}</td>
+                                <td class="text-right">{{ bond.echoRateEffective() }}</td>
+                                <td class="text-right graph1">{{ bond.echoProfit(request.capital) }}</td>
+                                <td class="text-right">{{ bond.echoRatePerYear() }}</td>
+                                <td class="text-right graph2">{{ bond.fetchRatioTimeProfit() }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% endif %}
         </div>
 
         <div id="aside">
