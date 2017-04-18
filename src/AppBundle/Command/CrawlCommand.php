@@ -52,7 +52,7 @@ class CrawlCommand extends ContainerAwareCommand
         foreach ($letters as $letter) {
 
             $url = sprintf(self::API_URL, strtoupper($letter));
-            $url = __DIR__ . '/../../../config/seeds/test.html';
+            //$url = __DIR__ . '/../../../config/seeds/test.html';
 
             $parser = new Parser(file_get_contents($url));
             $root = $parser->parse();
