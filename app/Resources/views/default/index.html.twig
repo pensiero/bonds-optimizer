@@ -46,7 +46,7 @@
                                 <td class="text-right">{{ bond.fetchYearsLeft() }}</td>
                                 <td class="text-right">{{ bond.echoCoupon() }}</td>
                                 <td class="text-right">{{ bond.echoRateEffective() }}</td>
-                                <td class="text-right graph1">{{ bond.echoProfit(request.capital) }}</td>
+                                <td class="text-right graph1">{{ bond.fetchProfit(request.capital)|price(0) }}</td>
                                 <td class="text-right">{{ bond.echoRatePerYear() }}</td>
                                 <td class="text-right graph2">{{ bond.fetchRatioTimeProfit() }}</td>
                             </tr>

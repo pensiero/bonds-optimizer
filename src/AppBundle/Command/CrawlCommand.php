@@ -73,9 +73,12 @@ class CrawlCommand extends ContainerAwareCommand
                 $code = isset($matches[2]) ? $matches[2] : null;
 
                 // price
-                $price = (float) str_replace(',', '.', trim($parts->nth(1)->getText()));
+                $price = trim($parts->nth(1)->getText());
+                $price = str_replace('.', '', $price);
+                $price = str_replace(',', '.', $price);
+                $price = (float) $price;
 
-                // variation
+                    // variation
                 $variation = $parts->nth(2)->find('span')->first()->getText();
                 $variation = $variation === 'UNC.'
                     ? null

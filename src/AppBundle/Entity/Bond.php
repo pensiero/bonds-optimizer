@@ -271,18 +271,6 @@ class Bond extends Entity
     }
 
     /**
-     * Echo profit
-     *
-     * @param int $capital
-     *
-     * @return string
-     */
-    public function echoProfit($capital)
-    {
-        return $this->fetchProfit($capital) . ' €';
-    }
-
-    /**
      * Ratio based on time and profit
      *
      * @return float
