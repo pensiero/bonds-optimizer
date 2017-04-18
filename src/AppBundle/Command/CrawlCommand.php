@@ -57,7 +57,7 @@ class CrawlCommand extends ContainerAwareCommand
             $parser = new Parser(file_get_contents($url));
             $root = $parser->parse();
 
-            $rows = $root->find('.tlb-commontb tbody tr');
+            $rows = $root->find('.page-body tbody tr');
 
             /** @var TagNode $row */
             foreach ($rows as $row) {
@@ -82,9 +82,16 @@ class CrawlCommand extends ContainerAwareCommand
                     : (float) str_replace(',', '.', trim($variation));
 
                 // date
-                $date = $parts->nth(3)->getText();
-                $date = \DateTime::createFromFormat('d/m/Y', $date);
-                $date->setTime(0, 0, 0);
+                $dateString = $parts->nth(3)->getText();
+                $date = \DateTime::createFromFormat('d/m/Y', $dateString);
+
+                // date is of today
+                if (!$date) {
+                    $date = \DateTime::createFromFormat('H.i', $dateString);
+                }
+                else {
+                    $date->setTime(0, 0, 0);
+                }
 
                 // open
                 $open = str_replace(',', '.', trim($parts->nth(4)->getText()));

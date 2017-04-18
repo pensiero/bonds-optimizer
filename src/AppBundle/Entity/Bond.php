@@ -115,7 +115,8 @@ class Bond extends Entity
      */
     public function fetchDeadline()
     {
-        $monthCodes = ['Ge', 'Fb', 'Mz', 'Ap', 'Mg', 'Gn', 'Lg', 'Ag', 'St', 'Ot', 'Nv', 'Dc'];
+        $monthCodes = ['Ge', 'Fb', 'Mr', 'Mz', 'Ap', 'Mg', 'Gn', 'Lg', 'Ag', 'St', 'Ot', 'Nv', 'Dc'];
+        $monthCodesRealIndexes = [1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         $monthCodesForRegex = implode('|', $monthCodes);
 
         preg_match('/(\d{2})(['.$monthCodesForRegex.']{2})(\d{2})/i', $this->echoCleanName(), $matches);
@@ -126,7 +127,7 @@ class Bond extends Entity
 
         $day = (int) $matches[1];
 
-        $month = array_search($matches[2], $monthCodes) + 1;
+        $month = $monthCodesRealIndexes[array_search($matches[2], $monthCodes)];
 
         $year = (int) ("20" . $matches[3]);
 
@@ -161,7 +162,12 @@ class Bond extends Entity
     public function fetchDaysLeft()
     {
         $now = new \DateTime();
-        $interval = $now->diff($this->fetchDeadline());
+        try {
+            $interval = $now->diff($this->fetchDeadline());
+        }
+        catch (\Exception $e) {
+            die(var_dump($this));
+        }
         $days = (int) $interval->format('%a');
 
         return $days == 0 ? 1 : $days;
