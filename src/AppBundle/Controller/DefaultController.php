@@ -11,6 +11,8 @@ class DefaultController extends Controller
 {
     const DEFAULT_CAPITAL = 5000;
 
+    const DEFAULT_NAMES_EXCLUDED = 'bpvi,petrobras,peru,sudafrica,grecia,messico,colombia,romania,portogallo,argentina,turchia,brasile,russia,akbank,rentenbank,turkiye,veneto bca,banca nuova,portugal telecom,bei,kfw,venezuela,rabobank,ibrd,ebrd,ibi';
+
     const DEFAULT_ORDER_DIRECTION = 'ASC';
 
 
@@ -142,7 +144,7 @@ class DefaultController extends Controller
             'bonds'    => $bonds,
             'request' => [
                 'name'           => $nameRequest,
-                'namesExcluded'  => $namesExcludedRequest,
+                'namesExcluded'  => $namesExcludedRequest ? $namesExcludedRequest : self::DEFAULT_NAMES_EXCLUDED,
                 'ratio'          => $ratioRequest,
                 'profit'         => $profitRequest,
                 'lastDate'       => $lastDateRequest,
