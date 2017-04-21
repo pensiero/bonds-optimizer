@@ -51,7 +51,10 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
+        $nameRequest = $request->query->get('name');
         $ratioRequest = $request->query->get('ratio');
+        $profitRequest = $request->query->get('profit');
+        $lastDateRequest = $request->query->get('lastDate');
         $yearsStartRequest = $request->query->get('years_start');
         $yearsEndRequest = $request->query->get('years_end');
         $orderRequest = $request->query->get('order');
@@ -67,8 +70,22 @@ class DefaultController extends Controller
         // highlight
         if ($highlightRequest) {
             $bonds
-                ->where('n.highlight = :highlight')
+                ->andWhere('n.highlight = :highlight')
                 ->setParameter('highlight', true);
+        }
+
+        // name
+        if ($nameRequest) {
+            $bonds
+                ->andWhere('n.name LIKE :name')
+                ->setParameter('name', '%' . $nameRequest . '%');
+        }
+
+        // name
+        if ($lastDateRequest) {
+            $bonds
+                ->andWhere('n.date >= :lastDate')
+                ->setParameter('lastDate', new \DateTime($lastDateRequest), \Doctrine\DBAL\Types\Type::DATETIME);
         }
 
         $bonds = $bonds
@@ -80,6 +97,13 @@ class DefaultController extends Controller
         if ($ratioRequest) {
             $bonds = array_filter($bonds, function($bond) use ($ratioRequest) {
                 return $bond->fetchRatioTimeProfit() >= $ratioRequest;
+            });
+        }
+
+        // profit filter
+        if ($profitRequest) {
+            $bonds = array_filter($bonds, function($bond) use ($profitRequest, $capitalRequest) {
+                return $bond->fetchProfit($capitalRequest) >= $profitRequest;
             });
         }
 
@@ -104,7 +128,10 @@ class DefaultController extends Controller
         return $this->render('default/index.html.twig', [
             'bonds'    => $bonds,
             'request' => [
+                'name'          => $nameRequest,
                 'ratio'          => $ratioRequest,
+                'profit'         => $profitRequest,
+                'lastDate'       => $lastDateRequest,
                 'yearsStart'     => $yearsStartRequest,
                 'yearsEnd'       => $yearsEndRequest,
                 'order'          => $orderRequest,
