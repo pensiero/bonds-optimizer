@@ -65,6 +65,10 @@
                         <input type="text" value="{{ request.name }}" name="name" id="nameInput" class="form-control" />
                     </div>
                     <div class="form-group">
+                        <label for="namesExcludedInput">Names excluded</label>
+                        <input type="text" value="{{ request.namesExcluded }}" name="namesExcluded" id="namesExcludedInput" class="form-control" placeholder="es: bei,veneto bca,bpvi" />
+                    </div>
+                    <div class="form-group">
                         <label for="ratioInput">Ratio >=</label>
                         <input type="text" value="{{ request.ratio }}" name="ratio" id="ratioInput" class="form-control" />
                     </div>

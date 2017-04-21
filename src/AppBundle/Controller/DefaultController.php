@@ -52,6 +52,7 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         $nameRequest = $request->query->get('name');
+        $namesExcludedRequest = $request->query->get('namesExcluded');
         $ratioRequest = $request->query->get('ratio');
         $profitRequest = $request->query->get('profit');
         $lastDateRequest = $request->query->get('lastDate');
@@ -81,7 +82,19 @@ class DefaultController extends Controller
                 ->setParameter('name', '%' . $nameRequest . '%');
         }
 
-        // name
+        // name excluded
+        if ($namesExcludedRequest) {
+            $namesExcluded = explode(',', $namesExcludedRequest);
+            $i = 0;
+            foreach ($namesExcluded as $nameExcluded) {
+                $i++;
+                $bonds
+                    ->andWhere('n.name NOT LIKE :name'.$i.'')
+                    ->setParameter('name'.$i, '%' . trim($nameExcluded) . '%');
+            }
+        }
+
+        // last date
         if ($lastDateRequest) {
             $bonds
                 ->andWhere('n.date >= :lastDate')
@@ -128,7 +141,8 @@ class DefaultController extends Controller
         return $this->render('default/index.html.twig', [
             'bonds'    => $bonds,
             'request' => [
-                'name'          => $nameRequest,
+                'name'           => $nameRequest,
+                'namesExcluded'  => $namesExcludedRequest,
                 'ratio'          => $ratioRequest,
                 'profit'         => $profitRequest,
                 'lastDate'       => $lastDateRequest,
