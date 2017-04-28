@@ -310,13 +310,13 @@ class Bond extends Entity
      */
     public function fetchCoupon()
     {
-        preg_match('/([0-9]+\.?[0-9]*)%/', $this->echoCleanName(), $matches);
+        preg_match('/([0-9]+[\.|,]?[0-9]*)%/', $this->echoCleanName(), $matches);
 
         if (!isset($matches[0])) {
             return 0;
         }
 
-        return (float) $matches[1];
+        return (float) str_replace(',', '.', $matches[1]);
     }
 
     /**
