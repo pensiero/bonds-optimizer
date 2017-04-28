@@ -11,7 +11,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CrawlCommand extends ContainerAwareCommand
 {
-    const API_URL = 'http://finanza.repubblica.it/Obbligazioni_TLX.aspx?letter=%s';
+    const API_URLS = [
+        'TLX' => 'http://finanza.repubblica.it/Obbligazioni_TLX.aspx?letter=%s',
+        'MOT' => 'http://finanza.repubblica.it/Obbligazioni_MOT.aspx?letter=%s',
+    ];
 
     /**
      * @var EntityManager
@@ -51,65 +54,68 @@ class CrawlCommand extends ContainerAwareCommand
         $letters = range('a', 'z');
         foreach ($letters as $letter) {
 
-            $url = sprintf(self::API_URL, strtoupper($letter));
-            //$url = __DIR__ . '/../../../config/seeds/test.html';
+            foreach (self::API_URLS as $market => $apiUrl) {
 
-            $parser = new Parser(file_get_contents($url));
-            $root = $parser->parse();
+                $url = sprintf($apiUrl, strtoupper($letter));
+                //$url = __DIR__ . '/../../../config/seeds/test.html';
 
-            $rows = $root->find('.page-body tbody tr');
+                $parser = new Parser(file_get_contents($url));
+                $root = $parser->parse();
 
-            /** @var TagNode $row */
-            foreach ($rows as $row) {
+                $rows = $root->find('.page-body tbody tr');
 
-                $parts = $row->find('td');
+                /** @var TagNode $row */
+                foreach ($rows as $row) {
 
-                // name
-                $name = $parts->nth(0)->find('a')->first()->getText();
+                    $parts = $row->find('td');
 
-                // code
-                $code = $parts->nth(0)->find('a')->first()->getAttribute('href');
-                preg_match('/(.*)addCode=(.*)/', $code, $matches);
-                $code = isset($matches[2]) ? $matches[2] : null;
+                    // name
+                    $name = $parts->nth(0)->find('a')->first()->getText();
 
-                // price
-                $price = trim($parts->nth(1)->getText());
-                $price = str_replace('.', '', $price);
-                $price = str_replace(',', '.', $price);
-                $price = (float) $price;
+                    // code
+                    $code = $parts->nth(0)->find('a')->first()->getAttribute('href');
+                    preg_match('/(.*)addCode=(.*)/', $code, $matches);
+                    $code = isset($matches[2]) ? $matches[2] : null;
 
-                    // variation
-                $variation = $parts->nth(2)->find('span')->first()->getText();
-                $variation = $variation === 'UNC.'
-                    ? null
-                    : (float) str_replace(',', '.', trim($variation));
+                    // price
+                    $price = trim($parts->nth(1)->getText());
+                    $price = str_replace('.', '', $price);
+                    $price = str_replace(',', '.', $price);
+                    $price = (float) $price;
 
-                // date
-                $dateString = $parts->nth(3)->getText();
-                $date = \DateTime::createFromFormat('d/m/Y', $dateString);
+                        // variation
+                    $variation = $parts->nth(2)->find('span')->first()->getText();
+                    $variation = $variation === 'UNC.'
+                        ? null
+                        : (float) str_replace(',', '.', trim($variation));
 
-                // date is of today
-                if (!$date) {
-                    $date = \DateTime::createFromFormat('H.i', $dateString);
+                    // date
+                    $dateString = $parts->nth(3)->getText();
+                    $date = \DateTime::createFromFormat('d/m/Y', $dateString);
+
+                    // date is of today
+                    if (!$date) {
+                        $date = \DateTime::createFromFormat('H.i', $dateString);
+                    }
+                    else {
+                        $date->setTime(0, 0, 0);
+                    }
+
+                    // open
+                    $open = str_replace(',', '.', trim($parts->nth(4)->getText()));
+                    $open = $open === '---' ? null : (float) $open;
+
+                    // min
+                    $min = str_replace(',', '.', trim($parts->nth(5)->getText()));
+                    $min = $min === '---' ? null : (float) $min;
+
+                    // max
+                    $max = str_replace(',', '.', trim($parts->nth(6)->getText()));
+                    $max = $max === '---' ? null : (float) $max;
+
+                    // create the bond
+                    $this->createBond($market, $name, $code, $price, $variation, $date, $open, $min, $max);
                 }
-                else {
-                    $date->setTime(0, 0, 0);
-                }
-
-                // open
-                $open = str_replace(',', '.', trim($parts->nth(4)->getText()));
-                $open = $open === '---' ? null : (float) $open;
-
-                // min
-                $min = str_replace(',', '.', trim($parts->nth(5)->getText()));
-                $min = $min === '---' ? null : (float) $min;
-
-                // max
-                $max = str_replace(',', '.', trim($parts->nth(6)->getText()));
-                $max = $max === '---' ? null : (float) $max;
-
-                // create the bond
-                $this->createBond($name, $code, $price, $variation, $date, $open, $min, $max);
             }
         }
     }
@@ -124,10 +130,11 @@ class CrawlCommand extends ContainerAwareCommand
      * @param float      $min
      * @param float      $max
      */
-    private function createBond($name, $code, $price, $variation, $date, $open, $min, $max)
+    private function createBond($market, $name, $code, $price, $variation, $date, $open, $min, $max)
     {
         $bond = new Bond();
 
+        $bond->setMarket($market);
         $bond->setName($name);
         $bond->setCode($code);
         $bond->setPrice($price);

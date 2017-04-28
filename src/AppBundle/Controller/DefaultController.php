@@ -108,30 +108,34 @@ class DefaultController extends Controller
             ->getQuery()
             ->getResult();
 
+        $bonds = array_filter($bonds, function(Bond $bond) {
+            return $bond->isCoherent();
+        });
+
         // ratio filter
         if ($ratioRequest) {
-            $bonds = array_filter($bonds, function($bond) use ($ratioRequest) {
+            $bonds = array_filter($bonds, function(Bond $bond) use ($ratioRequest) {
                 return $bond->fetchRatioTimeProfit() >= $ratioRequest;
             });
         }
 
         // profit filter
         if ($profitRequest) {
-            $bonds = array_filter($bonds, function($bond) use ($profitRequest, $capitalRequest) {
+            $bonds = array_filter($bonds, function(Bond $bond) use ($profitRequest, $capitalRequest) {
                 return $bond->fetchProfit($capitalRequest) >= $profitRequest;
             });
         }
 
         // years start filter
         if ($yearsStartRequest) {
-            $bonds = array_filter($bonds, function($bond) use ($yearsStartRequest) {
+            $bonds = array_filter($bonds, function(Bond $bond) use ($yearsStartRequest) {
                 return $bond->fetchYearsLeft() >= $yearsStartRequest;
             });
         }
 
         // years end filter
         if ($yearsEndRequest) {
-            $bonds = array_filter($bonds, function($bond) use ($yearsEndRequest) {
+            $bonds = array_filter($bonds, function(Bond $bond) use ($yearsEndRequest) {
                 return $bond->fetchYearsLeft() <= $yearsEndRequest;
             });
         }

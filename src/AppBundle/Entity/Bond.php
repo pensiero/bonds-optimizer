@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Bond extends Entity
 {
-    const BOND_URL = 'http://finanza.repubblica.it/Obbligazioni_TLX_Scheda.aspx?addCode=%s';
+    const BOND_URL = 'http://finanza.repubblica.it/Obbligazioni_%s_Scheda.aspx?addCode=%s';
 
     const YEARS_LEFT_PRECISION = 3;
 
@@ -18,6 +18,12 @@ class Bond extends Entity
     const RATE_YEARLY_PRECISION = 3;
 
     const RATIO_TIME_PROFIT_PRECISION = 5;
+
+    /**
+     * @ORM\Column(type="string", length=200)
+     * @var string
+     */
+    private $market;
 
     /**
      * @ORM\Column(type="string", length=200)
@@ -83,7 +89,7 @@ class Bond extends Entity
 
     public function echoUrl()
     {
-        return sprintf(self::BOND_URL, $this->code);
+        return sprintf(self::BOND_URL, strtoupper($this->market), $this->code);
     }
 
     /**
@@ -109,20 +115,100 @@ class Bond extends Entity
     }
 
     /**
-     * Fetch deadline
+     * Check if there are any dates inside the name
      *
-     * @return \DateTime|null
+     * @return bool
      */
-    public function fetchDeadline()
+    public function isCoherent()
     {
-        $monthCodes = ['Ge', 'Fb', 'Mr', 'Mz', 'Ap', 'Mg', 'Gn', 'Lg', 'Ag', 'St', 'Ot', 'Nv', 'Dc'];
-        $monthCodesRealIndexes = [1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        preg_match('/(\d)/i', $this->echoCleanName(), $matches);
+
+        return isset($matches[0]);
+    }
+
+    /**
+     * Parse a string that could contain a deadline as range of years
+     *
+     * @return array|bool
+     */
+    private function fetchDeadlineAsYearsRange()
+    {
+        preg_match('/(\d{4})-(\d{4})/i', $this->echoCleanName(), $matches);
+
+        // nothing found
+        if (!isset($matches[0])) {
+            return false;
+        }
+
+        // day and month are set to 1
+        return [1, 1, (int) $matches[2]];
+    }
+
+    /**
+     * Parse a string that could contain a deadline as month and year
+     *
+     * @return array|bool
+     */
+    private function fetchDeadlineAsMonthYear()
+    {
+        preg_match('/(\d{2})\/(\d{2,4})/i', $this->echoCleanName(), $matches);
+
+        // nothing found
+        if (!isset($matches[0])) {
+            return false;
+        }
+
+        if (strlen($matches[2]) == 2) {
+            $matches[2] = '20' . $matches[2];
+        }
+
+        // day and month are set to 1
+        return [1, (int) $matches[1], (int) $matches[2]];
+    }
+
+    /**
+     * Parse a string that could contain a deadline as month and year
+     *
+     * @return array|bool
+     */
+    private function fetchDeadlineAsYear()
+    {
+        preg_match('/(\d{2,4})/i', $this->echoCleanName(), $matches);
+
+        // nothing found
+        if (!isset($matches[0])) {
+            return false;
+        }
+
+        if (strlen($matches[1]) == 2) {
+            $matches[1] = '20' . $matches[1];
+        }
+
+        // day and month are set to 1
+        return [1, 1, (int) $matches[1]];
+    }
+
+    /**
+     * Parse a string that could contain a deadline as date
+     *
+     * @return array|bool
+     */
+    private function fetchDeadlineAsDate()
+    {
+        $monthCodes = ['Ge', 'Fb', 'Mr', 'Mz', 'Ap', 'Mg', 'Gn', 'Lg', 'Ag', 'St', 'Ot', 'Nv', 'No', 'Dc', 'Di'];
+        $monthCodesRealIndexes = [1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 12];
         $monthCodesForRegex = implode('|', $monthCodes);
 
-        preg_match('/(\d{2})(['.$monthCodesForRegex.']{2})(\d{2})/i', $this->echoCleanName(), $matches);
+        preg_match('/(\d{2})?(['.$monthCodesForRegex.']{2})(\d{2})/i', $this->echoCleanName(), $matches);
 
+        // nothing found
         if (!isset($matches[0])) {
-            return null;
+            return false;
+        }
+
+        // no day found (set day as 1)
+        if (empty($matches[1])) {
+            $matches[1] = 1;
         }
 
         $day = (int) $matches[1];
@@ -130,6 +216,40 @@ class Bond extends Entity
         $month = $monthCodesRealIndexes[array_search($matches[2], $monthCodes)];
 
         $year = (int) ("20" . $matches[3]);
+
+        return [$day, $month, $year];
+    }
+
+    /**
+     * Fetch deadline
+     *
+     * @return \DateTime|null
+     */
+    public function fetchDeadline()
+    {
+        // parse normal date
+        $date = $this->fetchDeadlineAsDate();
+
+        // parse range of years
+        if (!$date) {
+            $date = $this->fetchDeadlineAsYearsRange();
+        }
+
+        // parse month/year
+        if (!$date) {
+            $date = $this->fetchDeadlineAsMonthYear();
+        }
+
+        // parse year
+        if (!$date) {
+            $date = $this->fetchDeadlineAsYear();
+        }
+
+        if (!$date) {
+            return null;
+        }
+
+        list($day, $month, $year) = $date;
 
         $date = new \DateTime();
         $date->setDate($year, $month, $day);
@@ -166,7 +286,7 @@ class Bond extends Entity
             $interval = $now->diff($this->fetchDeadline());
         }
         catch (\Exception $e) {
-            die(var_dump($this));
+            die(dump($this));
         }
         $days = (int) $interval->format('%a');
 
@@ -287,6 +407,22 @@ class Bond extends Entity
         }
 
         return $this->variation . '%';
+    }
+
+    /**
+     * @return string
+     */
+    public function getMarket(): string
+    {
+        return $this->market;
+    }
+
+    /**
+     * @param string $market
+     */
+    public function setMarket(string $market)
+    {
+        $this->market = $market;
     }
 
     /**
