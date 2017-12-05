@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./config/docker/nginx-proxy/certs:/etc/nginx/certs
+
+  db:
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+
+  phpmyadmin:
+    environment:
+      - VIRTUAL_HOST=phpmyadmin.bonds.dev
+
+  web:
+    build:
+      context: .
+      dockerfile: config/docker/web/dev/Dockerfile
+    volumes:
+      - .:/usr/share/nginx
+      - ./config/docker/web/dev/php.conf:/usr/local/etc/php-fpm.d/zz-log.conf
+    env_file: .env
+
+  nginx:
+    volumes:
+      - .:/usr/share/nginx
+    env_file: .env
+    environment:
+      - VIRTUAL_HOST=*.bonds.dev
