@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Bond extends Entity
 {
-    private const BOND_URL = 'https://finanza.repubblica.it/Obbligazioni/TLX/Scheda/%s/120/';
+    private const BOND_URL = 'https://finanza.repubblica.it/Obbligazioni/%s/Scheda/%s/120/';
 
     private const YEARS_LEFT_PRECISION = 3;
 
