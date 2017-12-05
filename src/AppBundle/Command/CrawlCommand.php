@@ -11,15 +11,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CrawlCommand extends ContainerAwareCommand
 {
-    const API_URLS = [
-        'TLX' => 'http://finanza.repubblica.it/Obbligazioni_TLX.aspx?letter=%s',
-        'MOT' => 'http://finanza.repubblica.it/Obbligazioni_MOT.aspx?letter=%s',
+    private const API_URLS = [
+        'TLX' => 'https://finanza.repubblica.it/Obbligazioni/TLX/%s',
+        'MOT' => 'https://finanza.repubblica.it/Obbligazioni/MOT/%s',
     ];
 
     /**
      * @var EntityManager
      */
-    protected $em;
+    private $em;
 
     protected function configure()
     {
@@ -46,6 +46,8 @@ class CrawlCommand extends ContainerAwareCommand
      * @param OutputInterface $output
      *
      * @return int|null|void
+     * @throws \Doctrine\ORM\ORMInvalidArgumentException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -62,35 +64,39 @@ class CrawlCommand extends ContainerAwareCommand
                 $parser = new Parser(file_get_contents($url));
                 $root = $parser->parse();
 
-                $rows = $root->find('.page-body tbody tr');
+                $rows = $root->find('.table-rounded tr');
+
+                $count = 0;
 
                 /** @var TagNode $row */
                 foreach ($rows as $row) {
 
+                    // skin first line
+                    if ($count++ === 0) {
+                        continue;
+                    }
+
                     $parts = $row->find('td');
 
                     // name
-                    $name = $parts->nth(0)->find('a')->first()->getText();
+                    $name = $this->cleanHtmlText($parts->nth(0)->find('a')->first()->getText());
 
                     // code
-                    $code = $parts->nth(0)->find('a')->first()->getAttribute('href');
-                    preg_match('/(.*)addCode=(.*)/', $code, $matches);
-                    $code = isset($matches[2]) ? $matches[2] : null;
+                    $code = $this->cleanHtmlText($parts->nth(0)->find('a')->first()->getAttribute('rel'));
 
                     // price
-                    $price = trim($parts->nth(1)->getText());
-                    $price = str_replace('.', '', $price);
-                    $price = str_replace(',', '.', $price);
+                    $price = $this->cleanHtmlText($parts->nth(1)->getText());
+                    $price = str_replace(['.', ','], ['', '.'], $price);
                     $price = (float) $price;
 
-                        // variation
-                    $variation = $parts->nth(2)->find('span')->first()->getText();
-                    $variation = $variation === 'UNC.'
+                    // variation
+                    $variation = $this->cleanHtmlText($parts->nth(2)->find('span')->first()->getText());
+                    $variation = \in_array($variation, ['UNC.', 'INV.'], false)
                         ? null
                         : (float) str_replace(',', '.', trim($variation));
 
                     // date
-                    $dateString = $parts->nth(3)->getText();
+                    $dateString = $this->cleanHtmlText($parts->nth(3)->getText());
                     $date = \DateTime::createFromFormat('d/m/Y', $dateString);
 
                     // date is of today
@@ -102,15 +108,15 @@ class CrawlCommand extends ContainerAwareCommand
                     }
 
                     // open
-                    $open = str_replace(',', '.', trim($parts->nth(4)->getText()));
+                    $open = str_replace(',', '.', $this->cleanHtmlText($parts->nth(4)->getText()));
                     $open = $open === '---' ? null : (float) $open;
 
                     // min
-                    $min = str_replace(',', '.', trim($parts->nth(5)->getText()));
+                    $min = str_replace(',', '.', $this->cleanHtmlText($parts->nth(5)->getText()));
                     $min = $min === '---' ? null : (float) $min;
 
                     // max
-                    $max = str_replace(',', '.', trim($parts->nth(6)->getText()));
+                    $max = str_replace(',', '.', $this->cleanHtmlText($parts->nth(6)->getText()));
                     $max = $max === '---' ? null : (float) $max;
 
                     // create the bond
@@ -129,23 +135,37 @@ class CrawlCommand extends ContainerAwareCommand
      * @param float      $open
      * @param float      $min
      * @param float      $max
+     *
+     * @throws \Doctrine\ORM\ORMInvalidArgumentException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function createBond($market, $name, $code, $price, $variation, $date, $open, $min, $max)
     {
         $bond = new Bond();
 
-        $bond->setMarket($market);
-        $bond->setName($name);
-        $bond->setCode($code);
-        $bond->setPrice($price);
-        $bond->setVariation($variation);
-        $bond->setDate($date);
-        $bond->setOpen($open);
-        $bond->setMin($min);
-        $bond->setMax($max);
+        $bond
+            ->setMarket($market)
+            ->setName($name)
+            ->setCode($code)
+            ->setPrice($price)
+            ->setVariation($variation)
+            ->setDate($date)
+            ->setOpen($open)
+            ->setMin($min)
+            ->setMax($max);
 
         $this->em->persist($bond);
         $this->em->flush();
         $this->em->clear();
+    }
+
+    /**
+     * @param $text
+     *
+     * @return string
+     */
+    private function cleanHtmlText($text)
+    {
+        return trim(str_replace(['\n', '\r'], '', $text));
     }
 }

@@ -9,15 +9,15 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Bond extends Entity
 {
-    const BOND_URL = 'http://finanza.repubblica.it/Obbligazioni_%s_Scheda.aspx?addCode=%s';
+    private const BOND_URL = 'https://finanza.repubblica.it/Obbligazioni/TLX/Scheda/%s/120/';
 
-    const YEARS_LEFT_PRECISION = 3;
+    private const YEARS_LEFT_PRECISION = 3;
 
-    const RATE_EFFECTIVE_PRECISION = 2;
+    private const RATE_EFFECTIVE_PRECISION = 2;
 
-    const RATE_YEARLY_PRECISION = 3;
+    private const RATE_YEARLY_PRECISION = 3;
 
-    const RATIO_TIME_PROFIT_PRECISION = 5;
+    private const RATIO_TIME_PROFIT_PRECISION = 5;
 
     /**
      * @ORM\Column(type="string", length=200)
@@ -84,7 +84,7 @@ class Bond extends Entity
      */
     public function __toString()
     {
-        return (string) $this->name;
+        return $this->name;
     }
 
     public function echoUrl()
@@ -95,7 +95,7 @@ class Bond extends Entity
     /**
      * @return string
      */
-    public function echoDate()
+    public function echoDate(): string
     {
         if (!$this->date) {
             return '';
@@ -119,7 +119,7 @@ class Bond extends Entity
      *
      * @return bool
      */
-    public function isCoherent()
+    public function isCoherent(): bool
     {
         preg_match('/(\d)/i', $this->echoCleanName(), $matches);
 
@@ -158,7 +158,7 @@ class Bond extends Entity
             return false;
         }
 
-        if (strlen($matches[2]) == 2) {
+        if (\strlen($matches[2]) === 2) {
             $matches[2] = '20' . $matches[2];
         }
 
@@ -180,7 +180,7 @@ class Bond extends Entity
             return false;
         }
 
-        if (strlen($matches[1]) == 2) {
+        if (\strlen($matches[1]) === 2) {
             $matches[1] = '20' . $matches[1];
         }
 
@@ -213,9 +213,9 @@ class Bond extends Entity
 
         $day = (int) $matches[1];
 
-        $month = $monthCodesRealIndexes[array_search($matches[2], $monthCodes)];
+        $month = $monthCodesRealIndexes[array_search($matches[2], $monthCodes, false)];
 
-        $year = (int) ("20" . $matches[3]);
+        $year = (int) ('20' . $matches[3]);
 
         return [$day, $month, $year];
     }
@@ -225,7 +225,7 @@ class Bond extends Entity
      *
      * @return \DateTime|null
      */
-    public function fetchDeadline()
+    public function fetchDeadline(): ?\DateTime
     {
         // parse normal date
         $date = $this->fetchDeadlineAsDate();
@@ -249,11 +249,11 @@ class Bond extends Entity
             return null;
         }
 
-        list($day, $month, $year) = $date;
+        [$day, $month, $year] = $date;
 
         $date = new \DateTime();
         $date->setDate($year, $month, $day);
-        $date->setTime(0, 0, 0);
+        $date->setTime(0, 0);
 
         return $date;
     }
@@ -263,7 +263,7 @@ class Bond extends Entity
      *
      * @return null|string
      */
-    public function echoDeadline()
+    public function echoDeadline(): ?string
     {
         $deadline = $this->fetchDeadline();
 
@@ -279,7 +279,7 @@ class Bond extends Entity
      *
      * @return int
      */
-    public function fetchDaysLeft()
+    public function fetchDaysLeft(): int
     {
         $now = new \DateTime();
         try {
@@ -290,7 +290,7 @@ class Bond extends Entity
         }
         $days = (int) $interval->format('%a');
 
-        return $days == 0 ? 1 : $days;
+        return $days === 0 ? 1 : $days;
     }
 
     /**
@@ -298,7 +298,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function fetchYearsLeft()
+    public function fetchYearsLeft(): float
     {
         return round($this->fetchDaysLeft() / 365, self::YEARS_LEFT_PRECISION);
     }
@@ -310,7 +310,7 @@ class Bond extends Entity
      */
     public function fetchCoupon()
     {
-        preg_match('/([0-9]+[\.|,]?[0-9]*)%/', $this->echoCleanName(), $matches);
+        preg_match('/([\d]+[\.|,]?[\d]*)%/', $this->echoCleanName(), $matches);
 
         if (!isset($matches[0])) {
             return 0;
@@ -324,7 +324,7 @@ class Bond extends Entity
      *
      * @return string
      */
-    public function echoCoupon()
+    public function echoCoupon(): string
     {
         return $this->fetchCoupon() . '%';
     }
@@ -353,7 +353,7 @@ class Bond extends Entity
      *
      * @return string
      */
-    public function echoRateEffective()
+    public function echoRateEffective(): string
     {
         return $this->fetchRateEffective() . '%';
     }
@@ -363,7 +363,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function fetchRatePerYear()
+    public function fetchRatePerYear(): float
     {
         return round($this->fetchRateEffective() / $this->fetchYearsLeft(), self::RATE_YEARLY_PRECISION);
     }
@@ -373,7 +373,7 @@ class Bond extends Entity
      *
      * @return string
      */
-    public function echoRatePerYear()
+    public function echoRatePerYear(): string
     {
         return $this->fetchRatePerYear() . '%';
     }
@@ -395,7 +395,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function fetchRatioTimeProfit()
+    public function fetchRatioTimeProfit(): float
     {
         return round($this->fetchRateEffective() / $this->fetchDaysLeft(), self::RATIO_TIME_PROFIT_PRECISION) * 100;
     }
@@ -419,10 +419,14 @@ class Bond extends Entity
 
     /**
      * @param string $market
+     *
+     * @return Bond
      */
-    public function setMarket(string $market)
+    public function setMarket(string $market): Bond
     {
         $this->market = $market;
+
+        return $this;
     }
 
     /**
@@ -432,7 +436,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setName($name)
+    public function setName($name): Bond
     {
         $this->name = $name;
 
@@ -444,7 +448,7 @@ class Bond extends Entity
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -456,7 +460,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setPrice($price)
+    public function setPrice($price): Bond
     {
         $this->price = $price;
 
@@ -468,7 +472,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function getPrice()
+    public function getPrice(): float
     {
         return $this->price;
     }
@@ -480,7 +484,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setOpen($open)
+    public function setOpen($open): Bond
     {
         if ($open === '---') {
             $open = null;
@@ -496,7 +500,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function getOpen()
+    public function getOpen(): float
     {
         return $this->open;
     }
@@ -508,7 +512,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setMin($min)
+    public function setMin($min): Bond
     {
         $this->min = $min;
 
@@ -520,7 +524,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function getMin()
+    public function getMin(): float
     {
         return $this->min;
     }
@@ -532,7 +536,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setMax($max)
+    public function setMax($max): Bond
     {
         $this->max = $max;
 
@@ -544,7 +548,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function getMax()
+    public function getMax(): float
     {
         return $this->max;
     }
@@ -556,7 +560,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setVariation($variation)
+    public function setVariation($variation): Bond
     {
         $this->variation = $variation;
 
@@ -568,7 +572,7 @@ class Bond extends Entity
      *
      * @return float
      */
-    public function getVariation()
+    public function getVariation(): float
     {
         return $this->variation;
     }
@@ -580,7 +584,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setDate($date)
+    public function setDate($date): Bond
     {
         $this->date = $date;
 
@@ -592,7 +596,7 @@ class Bond extends Entity
      *
      * @return \DateTime
      */
-    public function getDate()
+    public function getDate(): \DateTime
     {
         return $this->date;
     }
@@ -604,7 +608,7 @@ class Bond extends Entity
      *
      * @return Bond
      */
-    public function setCode($code)
+    public function setCode($code): Bond
     {
         $this->code = $code;
 
@@ -616,7 +620,7 @@ class Bond extends Entity
      *
      * @return string
      */
-    public function getCode()
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -624,16 +628,20 @@ class Bond extends Entity
     /**
      * @return bool
      */
-    public function isHighlight()
+    public function getHighlight(): bool
     {
         return $this->highlight;
     }
 
     /**
      * @param bool $highlight
+     *
+     * @return Bond
      */
-    public function setHighlight($highlight)
+    public function setHighlight($highlight): Bond
     {
         $this->highlight = $highlight;
+
+        return $this;
     }
 }
