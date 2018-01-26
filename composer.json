@@ -60,7 +60,8 @@
         "yarn-install": "yarn install --production",
         "yarn-update": "yarn upgrade",
         "bower-install": "$(npm bin -q)/bower install --allow-root",
-        "bower-update": "$(npm bin -q)/bower update --allow-root"
+        "bower-update": "$(npm bin -q)/bower update --allow-root",
+        "crawl": "./bin/console app:crawl"
     },
     "config": {
         "platform": {
