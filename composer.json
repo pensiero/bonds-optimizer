@@ -9,7 +9,7 @@
             "email": "oscar.nesis@gmail.com",
             "homepage": "https://www.oscarfanelli.com",
             "role": "Developer"
-        },
+        }
     ],
     "autoload": {
         "psr-4": { "": "src/" },
